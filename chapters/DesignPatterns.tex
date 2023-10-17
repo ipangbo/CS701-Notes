@@ -362,7 +362,198 @@ Product1 是 Product 接口的一个具体实现。这由箭头表示，指示 P
 操作
 在 Creator 类中，除了 factoryMethod() 外，还有一个 operation() 方法。这可能是一个普通的操作，它可能会用到产品对象。例如，它可以调用 factoryMethod() 来获取一个 Product 对象，然后进行一些操作。
 
+\section{Template Method 模板方法}
 
+模板方法是一种行为设计模式，它在一个方法中定义了一个算法的骨架，但将一些步骤推迟到子类中进行。这允许子类在不改变算法结构的前提下，重新定义算法的某些特定步骤。
+
+该模式的主要目的是定义一个算法的骨架，并将某些步骤的具体实现推迟到子类中。这种结构确保算法的结构保持不变，同时允许子类提供部分实现。
+
+模板方法是定义在基类中的一个方法，通常是抽象的。它定义了一个算法的框架或骨架，其中某些步骤被设计为“钩子”或抽象方法。这些“钩子”或抽象方法的具体实现是由子类提供的。这种设计的关键在于，虽然算法的主体结构是固定的（定义在模板方法中），但是其中的某些步骤是抽象的，其具体实现是推迟到子类中完成的。这种设计允许子类在不更改算法的整体结构的前提下，为算法的某些步骤提供不同的实现。
+
+\subsection{模板方法应用举例}
+\begin{lstlisting}[language=Java, caption=Template Method Design Pattern Example, label=lst:template_method_pattern]
+public abstract class BulkItem {
+	...
+	public String getDescription() {
+		return getSpecifics() + " in bulk";
+	}
+	protected abstract String getSpecifics();
+	...
+}
+
+public class RainbowSweetFizzies extends BulkItem {
+	protected String getSpecifics() {
+		return "Rainbow Sweet Fizzies";
+	}
+}
+\end{lstlisting}
+\subsection{评价模板方法}
+模板方法具有以下优势：
+\begin{itemize}
+	\item 代码重用：通过将通用的算法结构定义在基类中，子类可以重用这部分代码。
+	\item 灵活性：子类可以提供针对特定需求的实现，而不会破坏算法的整体结构。
+	\item 封装：子类只需关注它们需要重写的特定步骤，而不是整个算法。
+\end{itemize}
+
+模板方法模式主要关注如何在保持算法结构稳定的同时，提供足够的灵活性，以便子类可以重写或重新定义算法的某些步骤。这种模式特别适合于那些算法步骤大致相同，但某些步骤的具体实现可能因情况而异的场景。
+
+\section{设计模式的集大成者---MVC设计模式}
+
+创建用户界面 (User Interface, UI) 是计算机科学和软件工程中的一个复杂而关键的领域。以下是关于用户界面的关键概念和要点：
+
+\textbf{系统状态的反映：}
+用户界面的一个核心功能是展示系统的底层状态。无论是操作系统、应用程序还是网页，UI都是用户与系统交互的桥梁，反映了系统的当前状态。
+
+\textbf{动态响应：}
+当系统的状态发生变化时，用户界面必须相应地更新，以反映这些变化。例如，当一个文档被编辑或保存时，UI可能会更新其标题或状态图标。
+
+\textbf{组件的层次性：}
+UI通常由多个元素或组件组成。有些组件在功能上可能与整体UI相似，如大小调整功能。这种层次结构意味着UI设计必须考虑到每个组件如何独立和协同工作。
+
+\textbf{关联性元素：}
+有些界面元素总是与其他特定元素关联，并以某种方式修改或影响该元素。例如，滚动条允许用户在内容区域内滚动，并直接影响内容的查看方式。
+
+\textbf{交互性：}
+UI的另一个核心功能是为用户提供与系统互动的手段。这可能是通过按钮、菜单、滑块等UI元素来实现的。
+
+\textbf{多种交互方式：}
+用户可能有多种方式来执行特定的操作，例如，可以通过点击菜单项或使用键盘快捷键来执行命令。设计时要考虑这些不同的交互方式，并确保它们都能有效地工作。
+
+\textbf{元素特定的行为：}
+不同的UI元素可能有与之关联的不同的行为或操作。例如，一个播放按钮可能启动视频，而一个删除按钮可能删除列表中的项。
+
+\textbf{系统功能的独立性：}
+尽管UI是系统的前端和用户的交互点，但UI的设计和功能通常与系统的底层功能是分离的。这意味着可以在不改变底层系统的情况下更新或修改UI。
+
+我们使用设计模式来解释用户界面的各个部分：
+
+\textbf{系统状态的观察者：}
+用户界面需要展示系统的底层状态。这里引入了观察者模式。观察者模式是一种设计模式，其中一个对象（被观察的对象）维护一个依赖于其状态的对象列表，并在其状态发生更改时通知它们。在这种情况下，用户界面是系统状态的观察者。
+
+\textbf{组合和元素：}
+用户界面由多个元素组成，有些元素的行为必须与整体用户界面相同，如大小调整。这里涉及到组合模式，其中对象组成树形结构，以表示部分-整体的层次关系。在用户界面中，这意味着单个元素和元素组（如面板或窗口）可以以相同的方式被视为和处理。
+
+\textbf{装饰器模式：}
+有些界面元素，如滚动条，总是与其他特定元素关联，并以某种方式修改或增强该元素的功能。装饰器模式允许在运行时动态地添加职责或行为到单个对象上。
+
+\textbf{策略模式：}
+用户界面为用户提供与其互动的手段，且具体如何执行特定操作可能会有所不同，如通过菜单或键盘快捷键。策略模式定义了一组算法，并将每个算法封装起来，使它们可以相互替换。这使得用户界面可以根据不同的上下文或用户偏好提供不同的交互策略。
+
+\textbf{工厂方法模式：}
+用户界面的不同元素可能有不同的关联操作。工厂方法模式提供了一个接口，用于创建对象，但允许子类决定实例化哪个类。在用户界面的上下文中，这可以用来定义和创建特定于元素的操作或行为。
+
+\subsection{MVC模式}
+
+MVC 是一种常用于开发用户界面的设计模式。它将应用程序逻辑分为三个主要组件：Model、View 和 Controller，以增加模块性和灵活性。MVC 是一个“原始”设计模式，存在于1980年之前，但其现代实现通常涉及其他设计模式的使用。就像其他设计模式一样，MVC 也有许多实现变体，以满足不同的需求和上下文。
+
+\textbf{Model: }代表系统的状态或底层数据。当用户或 Controller 对 Model 进行更改时，它可能会通知其关联的 Views 进行更新。
+
+\textbf{View: }展示 Model 的某种表示形式，通常是用户可见的界面部分。
+
+\textbf{Controller: }作为 Model 和 View 之间的中介，控制用户的输入并更新 Model。
+
+\subsubsection{与其他设计模式的关系}
+
+\textbf{Observer: }当 Model 发生变化时，View 作为 Observer 会被通知并进行更新。这确保了 Model 的当前状态始终与用户界面同步。
+
+\textbf{Composite: }用户界面经常有多个元素，其中某些元素（如面板或窗口）包含其他元素。Composite 模式允许我们将对象组合成树形结构，以表示部分-整体的层次关系。
+
+\textbf{Decorator: }用于动态地给某个对象增加额外的职责，例如在 View 中增加滚动条或其他界面功能。
+
+\textbf{Factory Method: }Controller 可能使用 Factory Method 来创建或实例化特定的对象或行为，根据需要进行操作。
+
+\textbf{Strategy: }允许在运行时选择算法或操作的实现。在 MVC 中，Controller 可能使用不同的策略来处理不同的用户输入或操作。
+
+\subsection{与用户界面有关的更改案例}
+
+\subsubsection{Change what state of the system has to be shown}
+这一点关注于系统中哪些状态需要展示给用户。这可能涉及到决策哪些数据或信息是关键的，哪些应该是可见的，以及哪些可能是次要的或应该被隐藏的。
+更改要展示的系统状态可能是由于业务需求变化、用户反馈、或系统的功能更新。
+这种变化可能会影响数据存储、数据处理和用户界面展示的方式。
+
+\subsubsection{Change how the state of system is shown}
+这涉及到如何向用户展示系统的状态。这可以是关于数据的可视化、界面的布局、颜色、字体或任何其他的界面元素。
+更改状态的展示方式可能是为了提高用户体验、遵循品牌指南、或者是为了适应特定的设备或屏幕尺寸。
+这也可能与采纳新的设计趋势或技术有关，例如从静态的展示过渡到动态的、交互式的展示。
+
+\subsubsection{Change how the user performs actions in the system}
+这关注于用户与系统交互的方式。这可能涉及到更改用户界面的元素，如按钮、菜单、滑块等，或更改用户完成任务的步骤和流程。
+更改用户执行操作的方式可能是为了简化流程、增加新的功能、或基于用户的反馈和行为分析来提高效率和满足性。
+这也可能涉及到技术的更新，例如引入语音命令、手势控制或其他新的交互方式。
+
+\subsection{MVC与可变性}
+
+MVC模式被设计出来的目的之一就是为了提高系统的可扩展性和可维护性。通过将业务逻辑、用户界面和用户输入分离到不同的部分，它允许开发者在不对整个系统造成太大冲击的情况下对某个部分进行更改。
+\textbf{这种分离确保了在添加新功能或进行修改时，只需要对少数类进行更改，而不是对整个应用程序代码进行大规模的重写。新功能往往是在新类中添加的，而不是通过改变现有类来实现的（$C$ decreased}）。
+
+\subsubsection{用更改案例分析可变性}
+
+\subsubsection{Change what state of the system has to be shown}
+当系统需要显示的状态发生变化时，主要的更改通常发生在“模型”中，因为模型负责处理应用程序的主要业务逻辑和数据。
+与此同时，只需更改或添加受影响的“视图”，因为视图负责显示模型的数据。通常不需要更改任何控制器，因为控制器主要处理用户输入。
+\subsubsection{Change how the state of system is shown}
+当需要更改系统状态的显示方式时，通常只需更改相关的“视图”。这是因为视图定义了如何将模型的数据展示给用户。
+在这种情况下，通常不需要更改模型或控制器，因为这种更改主要关注的是用户界面的外观和表现，而不是数据或用户输入。
+\subsubsection{Change how the user performs actions in the system}
+当需要更改用户如何在系统中执行操作时，只需更改或添加相关的“控制器”。控制器决定了如何响应用户的输入。
+这里的文字似乎有些重复，因为它提到了通常不需要更改任何控制器，但考虑到上下文，这可能意味着不需要更改其他与特定操作无关的控制器。
+
+
+\section{案例学习：JUnit}
+
+JUnit利用了多种设计模式来组织其架构和功能，这有助于提高代码的可维护性、可扩展性和灵活性。
+
+Test:
+这是JUnit的主要接口，任何想要执行的测试都要实现此接口。
+它有一个方法：run(TestResult)。
+Composite:Component:
+这是组合模式的组件部分。组合模式允许将对象组成树形结构以表示部分-整体的层次结构。
+TestCase:
+TestCase是JUnit中的核心类，代表一个测试用例。
+它有多个方法，如：run(TestResult), runTest(), setUp(), 和 tearDown()。
+setUp()和tearDown()方法用于测试前的初始化和测试后的清理。
+它使用了Command和Template Method设计模式。
+Command：它代表一个执行操作的指令。
+Template Method：它定义了一个算法的框架，允许子类在不改变算法结构的情况下重定义算法的某些步骤。
+TestSuite:
+代表一个测试套件，可以包含多个测试用例。
+它有两个主要方法：run(TestResult) 和 addTest(Test)。
+这个组件利用了Composite模式，因为一个TestSuite可以包含其他的TestSuites或TestCases。
+Composite:
+代表组合模式中的组合部分，它可以包含其他组件。
+TestResult:
+用于收集测试的结果。
+它使用了Collecting Parameter模式，这是一种将信息收集到一个对象中的方式，而不是将其散布到多个地方。
+Adapter (Class):
+适配器模式允许不兼容的接口工作在一起。这里的适配器模式可能被用来适配不同的测试类或方法。
+Composite: Leaf 和 Pluggable Selector:
+这些可能是JUnit中的高级特性或用于特定情况的组件。
+
+\begin{lstlisting}[language=Java, caption=JUnit Case Study Example, label=lst:junit_case_study]
+public abstract class TestCase extends Assert implements Test {
+	public void runBare() throws Throwable {
+		Throwable exception = null;
+		setUp() ;
+		try {
+			runTest ();
+		} catch (Throwable running) {
+			exception = running;
+		} finally {
+			try {
+				tearDown ();
+			} catch (Throwable tearingDown) {
+				if (exception == null) exception = tearingDown;
+			}
+		}
+		if (exception != null) throw exception;
+}
+...
+protected void setUp() throws Exception
+
+protected void tearDown() throws Exception
+
+}
+\end{lstlisting}
 
 
 
