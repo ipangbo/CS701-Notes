@@ -49,9 +49,351 @@ CR是一个针对特定变更案例的度量标准，它不能全面地代表一
 
 当系统规模庞大（例如，类的数量以千计）时，未实际进行变更之前，很难准确地确定需要变更的类的数量（C），这进一步增加了使用CR的复杂性。
 
-模型是相当粗粒度的，因为它不考虑更改的方法或语句。这意味着，即使更改影响到了多个类，如果每个类只需要很小的更改，CR 也可能高估了实际变更成本。
+模型是相当粗粒度(coarse-grained)的，因为它不考虑更改的方法或语句。这意味着，即使更改影响到了多个类，如果每个类只需要很小的更改，CR 也可能高估了实际变更成本。
 
 考虑到这些局限性，建议在做设计决策时，寻找能够在可能发生的、具有实质性影响的变更案例下最小化CR的设计。应该避免那些CR高度依赖于特定变更案例的设计，因为这种设计的可变性更难以预测和管理。寻找能减少需要变更的类的数量的设计，或者在保持需要变更的类数量不变的情况下增加总类数量的设计。这可能涉及到更细粒度的模块化，或者更好的封装和抽象。
 对任何设计，都应该思考可能引起问题的变更案例，并尝试预测和规划这些情况。这样的前瞻性思考可以帮助创建一个更具弹性和适应性的系统设计。
 
 \chapter{Design Patterns}
+
+\section{好的设计}
+设计模式最初是由 Gamma, Helm, Johnson, Vlissides 提出，他们也被称为“四人帮”(Gang of Four, GoF)。设计模式是从多年的对象导向设计经验中提炼出的精华，它提供了一种框架，让开发者能够解决反复出现的设计问题，而不必每次都从头开始。
+
+设计模式不是针对特定问题的具体实现，而是\textbf{对在特定上下文中反复出现的问题的通用解决方案。}因此，它们提供了一种方法，帮助开发者识别问题，并应用已经验证过的解决方案，这有助于提高开发效率并减少错误。
+
+设计模式描述的是一种通用解决方案，而不是一种特定的实现。这意味着，虽然设计模式提供了结构和方法论，但它们可以根据具体需求进行调整和修改。这种灵活性允许设计模式在不同的情况下以不同的方式实现。
+
+设计模式的有效性取决于它们被应用的上下文。如果上下文发生变化，可能原本适用的设计模式就不再适用。因此，理解和识别正确的上下文是应用设计模式的关键。
+
+尽管设计模式本身\textbf{并不直接支持可变性（Alterability）}，但许多设计模式都是为了解决与变化支持有关的问题而创建的。因此，它们往往间接地影响了系统的可变性，使得软件能够更容易适应变化，从而提高了其长期的可维护性和灵活性。
+
+
+\paragraph{使用了设计模式的设计就一定是好的设计}设计模式的使用量与设计质量不成正比，要考虑到设计模式的适用性和上下文相关性。
+
+设计模式是为特定上下文中的特定问题而创建的。如果一个设计模式解决的问题与当前需要解决的问题不匹配，或者设计模式预期的上下文与实际应用的上下文不一致，那么使用该设计模式不能被认为是“好的设计”。在这种情况下，即使是经过验证的设计模式也可能导致不必要的复杂性、性能下降或其他问题。
+
+\section{Composite 复合模式}
+
+复合模式的主要目的是允许客户端统一对待单个对象和对象的组合。这种模式主要用于希望以相同方式对待个别对象和组成对象的复杂结构，尤其是在具有部分-整体层次结构的情况下。通过这种方式，客户端不需要区分它们在处理的是单个对象还是对象的集合。这种模式解决的核心问题是如何有效地表示部分-整体层次结构。在这样的结构中，组件既可以是单个对象（部分）也可以是包含多个对象的组（整体）。复合模式适用于希望统一处理单个元素和元素集合的情况。这在各种应用中都很常见，例如图形系统（其中对象可以是单个形状或形状的组合）、文件系统（其中对象可以是文件或文件夹）等。
+
+
+这种模式通常包括三个主要元素：
+\begin{itemize}
+	\item 组件（Component） - 是一个抽象类或接口，定义了叶子和复合对象的公共接口。客户端通过这个接口与所有对象交互，无需关心它们是单个对象还是组合。
+	\item 叶子（Leaf） - 表示单个对象，实现或继承自组件接口。它没有子元素。
+	\item 复合（Composite） - 表示对象的集合，也实现或继承自组件接口。它内部包含组件列表，并可能提供添加、删除或获取组件的方法。
+	
+\end{itemize}
+
+\subsection{复合模式举例}
+
+\subsubsection{文件系统}
+在文件系统中，目录（Directories）和文件（Files）的关系是一个典型的复合模式实例。
+
+目录（Directories, Composite）：可以看作复合对象，因为它们可以包含其他目录或文件。目录具有添加、删除或获取其内部内容的功能。
+
+文件（Files, Leaves）：可以看作叶子对象，因为它们是文件系统中的终端对象，不包含其他目录或文件。
+
+\begin{lstlisting}[language=Java, caption=Composite Design Pattern Example, label=lst:composite_pattern]
+public interface File {
+    String longDetails();
+    String shortDetails();
+}
+
+public class PlainFile implements File {
+    private String _name;
+
+    public PlainFile(String name) { ... }
+
+    public String longDetails() {
+        return _name;
+    }
+
+    public String shortDetails() { ... }
+}
+
+public class Directory implements File {
+    ...
+    private List<File> _contents;
+
+    public Directory(String name, String permissions) {
+        ...
+        _contents = new ArrayList<File>();
+    }
+
+    public void addFile(File file) {
+        _contents.add(file);
+    }
+
+    public String longDetails() {
+        String result = _name + "/ (" + _permissions + ")";
+        for (File file: _contents) {
+            result += "\n" + file.longDetails();
+        }
+        return result;
+    }
+
+    public String shortDetails() { ... }
+}
+
+public class Browser {
+    public static void main(String[] args) {
+        Directory root = new Directory("root", "drwx------");
+        root.addFile(new PlainFile("README"));
+        Directory home = new Directory("home", "drwx------");
+        root.addFile(home);
+        Directory user = new Directory("ewan", "drwxrwxrwx");
+        home.addFile(user);
+        PlainFile compsci701quiz2 = new PlainFile("MostSecret.tex");
+        user.addFile(compsci701quiz2);
+
+        System.out.println("Printing root directory");
+        print(root);
+        System.out.println("\nPrinting user directory");
+        print(user);
+        System.out.println("\nPrinting plain file");
+        print(compsci701quiz2);
+    }
+
+    private static void print(File start) {
+        System.out.println(start.longDetails());
+    }
+}
+\end{lstlisting}
+
+在本代码中，复合模式的角色和具体的类对应如下：
+\begin{itemize}
+	\item Component: File
+	\item Composit: Directory
+	\item Leaf: PlainFile
+	\item Client: Browser
+\end{itemize}
+
+\subsubsection{员工层级}
+企业中的员工层级结构也是复合模式的一个实例。
+
+部门（Departments, Composite）：可以包含其他子部门或单独的员工。部门可以有添加、删除或获取其成员的功能。
+
+个人员工（Individual Employees, Leaves）：作为层级结构中的终端对象，不包含其他员工或子部门。
+
+\subsubsection{用户界面框架（如Swing）}
+
+用户界面框架中的组件和容器关系通常遵循复合模式。
+
+容器（如JPanel, Composite）：可以包含其他容器或界面组件。它们具有添加、删除或获取其内部组件的功能。
+
+组件（如JButton, Leaves）：作为界面中的终端对象，它们是单独的元素，不包含其他组件。
+
+\subsubsection{算术表达式}
+
+算术表达式的构建也可以使用复合模式。
+
+使用运算符的表达式（如加、减、乘、除, Composite）：这些表达式可能会包含其他子表达式或值/变量。例如，一个复合表达式可能是3 + (4 * 5)，其中4 * 5也是一个复合表达式。
+
+值或变量（如数字、字符, Leaves）：作为表达式中的终端对象，它们是单独的元素。
+
+\subsection{评价复合模式}
+
+使用复合模式可以使代码更加简洁和高效。没有复合模式，达到同样的功能将需要更多的代码，并且这些代码会更复杂。
+
+对于熟悉复合设计模式的人，他们会发现这种模式更容易理解，因为它已经在他们的知识库中。
+但对于不熟悉该模式的人，可能会感到困惑或难以理解。
+
+\subsubsection{可变性和复合模式}
+要添加新的叶子类L：
+L是新的代码，所以在评估可变性时，它“不算数”。
+至少需要修改一个类来从L构造对象。如果需要修改多于一个的类，那么这可能意味着复合模式并没有按预期的方式实现。
+因此，$C\text{(改变的类数)}= 1$。但实际情况可能会有所不同。
+添加新的复合类与此相同。
+通常，客户端（调用代码）不需要改变。
+但要注意的是，如果更改组件，可能需要更改复合类和每一个叶子类。
+
+\section{Command 命令模式}
+
+命令模式的主要目的是将一个请求封装为一个对象，这使得可以为客户端提供不同的请求、将请求排队或记录、并支持可撤销的操作。简而言之，这种模式允许我们将操作（命令）与请求该操作的对象（调用者）和知道如何执行操作的对象（接收者）进行分离。
+
+核心问题是如何将一个操作的调用者与执行该操作的实体进行解耦。为什么这很重要？因为直接的耦合可能导致代码更难维护、扩展和重构。
+解耦的关键是要确保在时间和空间上都进行。这意味着命令可以在不同的时间点被创建、排队、执行或记录，而与命令的执行者和接收者在物理上或逻辑上都没有直接的联系。
+
+命令模式的结构通常包含以下四个主要元素：
+\begin{itemize}
+	\item 客户端 (Client): 这是初始化命令需求的实体。它知道具体的命令和其参数，并将命令对象传递给调用者。
+	\item 命令 (Command): 这是一个抽象的接口或类，定义了执行操作的方法。它通常具有一个execute()方法，该方法调用接收者来执行请求的操作。
+	\item 调用者 (Invoker): 它持有命令对象，并在某个点上调用命令对象的execute()方法来执行请求。它不知道命令的具体实现或接收者是什么。
+	\item 接收者 (Receiver): 这是命令实际执行操作的实体。它知道如何执行与命令相关的操作。
+\end{itemize}
+
+
+\subsection{命令模式应用举例}
+
+\begin{itemize}
+	\item 图形用户界面（GUI）操作实现（一般来说，将图形用户界面（GUI）操作与图形用户界面（GUI）本身分离开来）
+	\item 延迟执行命令
+	\item 记录执行的命令
+	\item 更改执行命令的位置
+\end{itemize}
+
+
+\subsection{评价命令模式}
+\subsubsection{可变性和命令模式}
+当我们希望在已有的系统中添加新的行为或操作时，命令模式为此提供了一种优雅的方法。
+
+\paragraph{添加具体的命令类 (Add concrete command classes)}当需要引入新的行为或操作时，我们可以简单地添加一个新的具体命令类。这是全新的代码，因此从可变性的角度来看，它并不被计入修改的成本中。这意味着我们可以轻松地扩展系统功能，而无需对现有的命令类进行大量修改。
+
+\paragraph{创建具体的命令对象 (Create concrete command objects)}为了在系统中使用新的具体命令类，我们需要在某个地方创建其对象。这可能需要修改现有的代码，特别是在命令对象的创建和管理的地方。根据提供的信息，这应该只修改一个类，即负责创建和管理命令对象的那个类。
+
+\paragraph{可能需要修改选择命令对象的类 (Possibly one other class needs to change to choose the concrete command object to be created)}
+除了上述的类，可能还有另一个类需要进行修改，以便选择并创建正确的具体命令对象。这通常是调用者或与命令相关的某个客户端。
+
+\paragraph{典型的改动成本 (Typically $C = 2$)}当引入新的行为时，通常需要修改两个现有的类。这意味着，使用命令模式，系统的可变性通常是可接受的，因为大部分的新增行为只涉及添加新的代码，而对现有代码的修改是有限的。
+
+命令模式提供了一种将操作封装为对象的方法，从而允许系统在不影响其核心结构的前提下进行扩展。在考虑可变性时，它确保了系统的扩展和维护变得更加直接和简单。
+
+\section{Observer 观察者模式}
+
+\subsubsection{目的}
+观察者模式的主要目的是定义对象之间的一对多的依赖关系，当一个对象（被观察者）的状态发生变化时，所有依赖它的对象（观察者）都会被自动通知和更新。这种模式常用于实现事件驱动的系统，其中某些对象的状态变化可能会影响到其他对象的行为。
+
+\subsubsection{解耦}
+被观察者（或称为“主题”）不应该知道关于观察者的任何信息。这确保了被观察者与观察者之间的解耦，使得在运行时可以轻松地添加或移除观察者。这种解耦是观察者模式的关键特性，因为它允许系统在不修改被观察者代码的前提下增加新的响应行为。
+
+\subsubsection{观察者与被观察者 (Observers and Observed)}
+
+\paragraph{观察者 (Observers)}是对被观察者的状态变化感兴趣的对象。当被观察者的状态发生变化时，观察者希望知道这一变化，以便根据自己的需求做出相应的反应。
+
+观察者需要某种方式来告诉被观察者它们对其状态变化感兴趣。这通常通过注册机制实现，观察者可以注册自己，以便在被观察者状态发生变化时接收通知。
+
+\paragraph{被观察者 (Subject)}是观察者关心的对象，当其状态发生变化时，它会自动通知所有注册的观察者。
+
+当被观察者的状态发生变化时，它可以选择在通知中包含关于变化的具体信息，也可以不包含。这意味着通知可以是通用的（例如“状态已更改”），也可以是具体的（例如“温度已从20°C上升到25°C”）。
+
+\subsubsection{工作流程}
+Subject:
+这是被观察的对象。它有以下方法:
+attach(): 用于添加观察者。
+detach(): 用于移除观察者。
+notify(): 当Subject的状态发生变化时，通知所有的观察者。
+此外，Subject还有一个observers的集合，用于存储所有的观察者。
+示例中的Subject1是具体的Subject实现，它具有状态(state)，并提供了getState()和setState()方法。
+Observer:
+这是所有观察者的基类或接口。它有一个方法:
+update(): 当Subject的状态发生变化时，此方法会被调用。
+示例中的Observer1和Observer2是具体的观察者实现，每个都有自己的状态(state)，并且在Subject的状态发生变化时进行更新。
+
+初始化:
+Subject1（标记为s1）被创建。
+两个观察者Observer1（标记为o1）和Observer2（标记为o2）被创建。
+注册:
+Observer1和Observer2通过attach()方法注册自己为Subject1的观察者。
+状态变化:
+Subject1的状态通过setState()方法发生变化。
+Subject1调用notify()方法，通知所有注册的观察者其状态已经发生变化。
+更新观察者:
+由于Subject1的状态发生变化，每个观察者的update()方法被调用。
+在这个示例中，每个观察者在其update()方法中调用了getState()来获取Subject1的新状态。
+
+\subsection{观察者模式应用举例}
+记录系统中相关事件并提供这些事件（如写入文件）的日志系统。日志记录器是观察者，它以观察者身份向其希望记录事件的各个组件注册。例如，身份验证组件管理任何试图进行身份验证的用户。每次尝试都会通知日志记录器
+
+\subsection{评价观察者模式}
+
+观察者模式提供了一种强大的方式来实现对象之间的低耦合交互。当一个对象的状态发生变化时，所有对该变化感兴趣的对象都会得到通知，而不需要被观察者知道这些观察者的具体细节。这种模式在很多现代软件设计中都有应用，特别是在事件驱动的应用程序和实时系统中。
+
+\section{Decorator 装饰器模式}
+
+装饰器模式的主要意图是动态地为对象附加额外的职责。与继承相比，装饰器为扩展功能提供了更加灵活的替代方案。当你有一个对象和多个可以独立添加或删除的职责时，使用继承会导致子类数量呈指数级增长。
+例如，如果有4种可能的职责，并且任何一种或多种职责都可以附加到一个对象上，那么使用继承可能需要16种子类来覆盖所有可能的组合。
+装饰器模式提供了一种避免此问题的解决方案。通过动态地添加装饰器来扩展对象的功能，而不是通过继承创建大量的子类。
+
+一个被装饰的具体组件是一个组件，由其行为被装饰器修改的具体组件组成。
+
+
+
+\subsubsection{工作流程}
+Client: 这是使用组件（Component）的类。它与组件接口进行交互，但并不直接知道是否使用了装饰器。
+Component: 这是所有具体组件和装饰器共有的接口。它定义了一个operation()方法。
+Component1: 这是一个实际的组件，它实现了Component的operation()方法。
+Decorator: 这是所有装饰器的基类，它有一个与Component相同的接口。它有一个component成员，这个成员持有它要装饰的Component对象的引用。
+Decorator1 和 Decorator2: 这是两个具体的装饰器。除了实现operation()方法外，它们还可能提供额外的行为或状态，如addBehavior()方法。
+
+图中首先展示了一个Client对象如何与Decorator1、Decorator2和Component1进行交互。
+Client调用operation()，它首先传递给Decorator1。
+Decorator1可能会执行一些前置逻辑，然后调用其内部的component的operation()方法，此时component是Decorator2。
+Decorator2再次可能执行一些前置逻辑，然后将调用传递给它的component，即Component1。
+Component1最终执行operation()。
+在返回路径上，Decorator2和Decorator1可能会执行一些后置逻辑，例如调用addBehavior()方法。
+
+
+\subsection{装饰器模式应用举例}
+
+\paragraph{Java 中的Reader层次结构}
+例如，BufferedReader 修改了阅读器的行为，增加了缓冲功能。
+(实际上，BufferedReader 确实增加了一些行为，而这在技术上是不应该通过 Decorator 来实现的）。
+
+\subsection{评价装饰器模式}
+
+当需要为对象动态地添加职责，而不想使用大量子类时，装饰器模式是理想的选择。
+例如，在图形用户界面中，一个窗口可能有多种可能的装饰（如滚动条、边框、标题栏等）。使用装饰器模式可以允许用户在运行时选择哪些装饰应用于窗口，而不是为每种可能的组合创建一个子类。
+
+
+\section{Factory Method 工厂模式}
+
+工厂模式主要关注于对象的创建，但是它将实际创建对象的任务交给子类来完成。这种分离使得代码更加模块化和可扩展。
+
+工厂方法模式的核心是定义一个用于创建对象的接口，但是具体决定实例化哪一个类的责任是交给子类的。这意味着基类可以定义创建对象的过程（即工厂方法），但具体的实现细节（创建哪一种产品）是由子类决定的。
+
+很多时候，我们构建框架时会依赖抽象性。这种抽象性让框架更具有通用性和灵活性，因为它不与具体的实现细节绑定。然而，最终这些抽象必须在某处被具体化，因为在实际应用中，我们需要创建具体的对象实例。
+工厂方法模式提供了一个答案：如何在保持分离的同时，控制何时和如何创建具体的实例。基类中只定义了如何创建产品的框架（即工厂方法），而具体的产品类型则由子类决定。
+
+在工厂方法模式中，有两个主要组件：产品和工厂。产品是要创建的对象，而工厂是负责创建这些对象的实体。
+每个具体的工厂都负责创建一个具体的产品。这种关系很重要，因为它确保了创建对象的过程与实际创建的对象类型之间的一致性和对应关系。
+
+\subsubsection{工作流程}
+Creator 和 Creator1
+Creator 是一个抽象的创建者类，它定义了一个抽象的 factoryMethod()。这个方法是工厂方法，负责创建产品对象，但具体创建哪种产品并没有在这里定义。
+Creator1 是 Creator 的一个具体子类。它重写或实现了 factoryMethod()，具体化了产品的创建过程。也就是说，Creator1 决定了具体要创建哪个产品对象。
+Product 和 Product1
+Product 是一个产品的抽象接口，它定义了产品的基本行为和属性。
+Product1 是 Product 接口的具体实现。当 Creator1 的 factoryMethod() 被调用时，它会创建并返回一个 Product1 的实例。
+关系
+Creator 类有一个名为 product 的关联关系，指向 Product 接口。这表示 Creator 类通过 factoryMethod() 创建一个 Product 类型的对象。
+Creator1 作为 Creator 的子类，具体实现了 factoryMethod()，并创建了 Product1 的实例。这由 <<create>> 标注表示。
+Product1 是 Product 接口的一个具体实现。这由箭头表示，指示 Product1 继承自 Product。
+操作
+在 Creator 类中，除了 factoryMethod() 外，还有一个 operation() 方法。这可能是一个普通的操作，它可能会用到产品对象。例如，它可以调用 factoryMethod() 来获取一个 Product 对象，然后进行一些操作。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
