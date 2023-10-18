@@ -1,0 +1,167 @@
+\chapter{Coupling And Cohesion}
+
+\section{软件质量的度量}
+
+测量是关于为实体的属性分配数字或符号的过程，目的是为了可靠地根据这一属性对这些实体进行排序。这一过程需要考虑测量误差的限制。正确的测量应该反映出实体之间真实的大小关系。需要注意的是，即使当A真的比B长时，由于测量精度的限制和用于测量的工具的局限性，EPM的测量结果可能是相同的。这被称为观测误差。
+
+\section{藕盒和内裤}
+
+耦合关注模块之间的互相依赖程度，而内聚关注单一模块内部的功能紧密程度。
+
+如果能够测量耦合和内聚，那么可以改进“设计质量”。这里的设计质量是基于某些质量概念来定义的。换句话说，通过对这两个概念的有效测量，可以对系统的设计进行优化，使其更加健壮和易于维护。
+
+\paragraph{模块}是由界定元素界定的、连续的程序语句序列，具有一个聚合标识符。
+
+\paragraph{关系}如果一个模块在没有另一个模块的情况下无法正常工作，则这两个模块之间存在关系。
+
+\paragraph{耦合}耦合描述了模块之间的相互依赖程度，或者称为模块间连接的强度。模块与其他模块之间的连接越多，理解该模块就越困难，将该模块在其他情境中重用也就越困难，且隔离由该模块中的错误引起的故障也越困难。
+
+\paragraph{内聚}内聚描述了一个模块内部各个组件完成相同任务所需的程度，或者说模块的内部元素彼此之间是如何紧密绑定的。模块内部的元素绑定得越松散，该模块的各部分越是不同，理解它就越困难。
+
+“耦合”和“内聚”是描述软件模块质量的两个核心概念。耦合关注模块间的依赖关系，而内聚关注模块内部元素的紧密度。理想的软件设计应该追求\textbf{高内聚，低耦合}，因为这样可以使模块更易于理解、维护和重用。
+
+\section{度量内聚与耦合}
+
+\subsubsection{耦合的度量标准}
+\begin{itemize}
+	\item 内容耦合（Content）：当一个模块直接访问另一个模块的内容或数据时。
+    \item 公共耦合（Common）：当两个模块共享相同的全局数据时。
+    \item 控制耦合（Control）：一个模块控制另一个模块的执行。
+    \item 标记耦合（Stamp）：模块间共享数据结构，并且使用它的部分数据。
+    \item 数据耦合（Data）：模块间通过参数传递数据，但不使用全局数据。
+\end{itemize}
+
+\subsubsection{内聚的度量标准}
+
+\begin{itemize}
+	\item 偶然内聚（Coincidental）：模块内部的功能没有特定的关联。
+	\item 逻辑内聚（Logical）：执行相似操作的功能聚集在一起。
+	\item 时间内聚（Temporal）：功能在同一时间段内被执行。
+	\item 过程内聚（Procedural）：功能按顺序执行。
+	\item 通讯内聚（Communicational）：功能使用相同的输入或输出数据。
+	\item 顺序内聚（Sequential）：一个功能的输出是另一个功能的输入。
+	\item 功能内聚（Functional）：模块完成单一功能。
+	\item 信息内聚（Informational）：模块中的操作都使用相同的数据。
+\end{itemize}
+
+\subsection{面向对象设计的度量标准}
+
+\subsubsection{近现代（1991年）的面向对象设计指标}
+
+\paragraph{对象之间的耦合（CBO）}对于类A，其他有多少类调用它的方法或访问它的字段，反之亦然。
+
+\paragraph{方法的非内聚性（LCOM）}有多少方法对组使用至少一个相同的字段。
+
+\subsubsection{Martin和其他研究者提出的耦合度量}
+
+\paragraph{$C_e$}类A依赖的其他类的数量（FAN-OUT）。
+\paragraph{$C_a$}依赖类A的其他类的数量（FAN-IN）。
+
+\subsubsection{案例学习：度量内聚与耦合}
+
+\begin{lstlisting}[language=Java, caption=Measuring Example A, label=lst:measuring_exa]
+class MovieLister {
+    private CSMovieFinder finder = new CSVMovieFinder(...);
+
+    public List<Movie> moviesDirectedBy(String dir) {
+        List<Movie> allMovies = finder.findAll();
+        // iterate through 'allMovies' and find those with
+        // 'dir' as directory
+    }
+}
+	
+\end{lstlisting}
+
+\begin{lstlisting}[language=Java, caption=Measuring Example B, label=lst:measuring_exb]
+interface MovieFinder {
+    List<Movie> findAll();
+}
+
+class MovieLister {
+    private MovieFinder finder = null;
+
+    public MovieLister(MovieFinder finder) {
+        this.finder = finder;
+    }
+
+    public List<Movie> moviesDirectedBy(String dir) {
+        List<Movie> allMovies = finder.findAll();
+        // iterate through 'allMovies' and find those with
+        // 'dir' as directory
+    }
+}
+	
+\end{lstlisting}
+
+Design A:
+MovieLister 类直接依赖于 CSVMovieFinder 类。
+它使用 CSVMovieFinder 类的一个方法来找到所有的电影。
+
+Design B:
+在此设计中，引入了一个接口 MovieFinder。
+MovieLister 类现在依赖于这个接口，而不是特定的类。
+这样，任何实现了 MovieFinder 接口的类都可以被注入到 MovieLister 类中。
+
+CBO(Design A MovieLister) = 1 (+ somet number)—CSVMovieFinder\#CSVMovieFinder(), CSVMovieFinder\#findA11()
+
+CBO(Design B MovieLister) = 1 (+ same number)—MovieFinder\#findA11()
+
+FAN-OUT(Design A MovieLister) = 3 (+ some number)—CSVMovieFinder, List, Movie
+
+FAN-OUT(Design B MovieLister) = 3 (+ same number)—MovieFinder, List, Movie
+
+即使我们认为Design B比Design A更好，这两种设计的耦合度量值却是相同的。
+这可能是因为度量的精确度较低，导致了较高的测量误差。
+如果依赖反转原则（DIP）确实导致了更好的设计，那么CBO并不总是能够区分采用DIP和未采用DIP的设计。
+这意味着这些度量标准可能可靠（或可能不可靠），但它们不是很有用。
+
+\subsubsection{案例学习：LCOM}
+LCOM表示由每对方法使用的字段集合的交集形成的不相交集合的数量。换句话说，它测量一个类中方法如何使用类的字段，并通过这些使用情况尝试捕获方法之间的关联程度。
+
+类$C$有$k$个字段，分别是$f_1$, $f_2$, $f_3$,..., $f_k$。
+
+类$C$有$n$个公共方法，分别是$m_1$, $m_2$, $m_3$,..., $m_n$。
+
+$L_i$表示方法$m_i$使用的字段集合。
+$N$表示类中不同方法对的数量。这是一个简单的组合公式，给定n个方法，方法对的数量是$\frac{n(n-1)}{2}$。
+$P$是一个集合，其中每个元素都是一个方法对，这两个方法都不使用同一字段。
+$Q$是一个集合，其中每个元素都是一个方法对，这两个方法使用至少一个共同的字段。
+显然，$P$和$Q$的并集是所有可能的方法对。
+
+
+LCOM 1(OOPSLA1991)只是集合$P$的大小。
+
+LCOM 2(TSE1994)是集合$P$和集合$Q$的大小之间的差值，但如果结果为负，则取$0$。
+
+LCOM提供了一种方法来测量一个类的内聚度，或更确切地说，它的缺乏内聚度。如果LCOM值很高，这可能意味着类需要进行重构，因为它可能正在做太多的事情。两种不同版本的LCOM为我们提供了两种不同的方法来测量这种缺乏凝聚力，取决于我们如何解释不使用共同字段的方法之间的关系。
+
+\paragraph{使用图来计算LCOM}节点是方法，边是成员变量。如果两个方法共同使用了某个成员变量就在其中间连一条黑色的线。在所有黑线连完之后，将剩余所有节点两两之间用红色线段连起来。LCOM1即为红色线段数量；LCOM2即为红线数量减去蓝线数量，最小为0；LCOM3即为黑线组成的图中含有的连通分量的个数。
+
+\paragraph{猜测}如果LCOM3值是2。这可能表示有两个相互独立的方法组。类可能会因为一个方法组相关的成员变量或另一个方法组相关的成员变量的变化而变化，所以至少有两个原因可以改变它。所以该类具有至少两个职责。
+
+\section{内聚、耦合与可变性}
+
+\subsubsection{可修改性与耦合的关系}
+类A与其他多少类耦合，决定了其可修改性。耦合越多，当其中一个类改变时，A需要修改的可能性越大。换句话说，耦合导致修改风险（$C$）增加，从而增加了修改风险（$CR$）。
+
+\subsubsection{可修改性与内聚性的关系}
+一个低内聚的类，与多个概念匹配的可能性更大，与Contex Schema中的某个概念越不匹配（not a good match）。这意味着它需要应对的变化更多，从而修改的风险（$C$）会增加，导致修改风险（$CR$）增加。
+
+\section{耦合与可维护性}
+\subsubsection{可理解性与耦合}
+当类A与类B耦合时，想要完全理解A可能需要对B有一定了解。这是因为A的某些功能或行为可能依赖于B。
+结果是，开发人员可能需要投入更多的时间和精力来理解A，因为他们也需要理解与B相关的部分。这增加了理解A的复杂性和所需的工作量，导致理解效率降低。
+
+\subsubsection{可测试性与耦合}
+当类A与类B耦合时，对A进行测试可能需要涉及B。例如，如果A的某个方法调用了B的方法，那么在测试A的该方法时可能也需要确保B的那个方法正常工作。
+这意味着，测试A不仅仅是测试A本身，还可能需要考虑B的行为和状态。这增加了测试的复杂性，需要更多的资源来进行测试，并可能导致测试效率降低。
+
+\section{总结}
+耦合和内聚都是软件工程中非常直观的概念。大多数开发人员都能理解它们的意义，即它们都与软件的可修改性（alterability）有关。
+耦合关注的是软件组件（如类或模块）之间的关系强度；内聚则关注单个组件内部元素之间的紧密性。
+
+虽然这两个概念在直观上很有吸引力，但目前还没有可靠（或至少有用）的指标来度量它们。
+这意味着，尽管我们可以讨论耦合和内聚的好处和坏处，但要准确量化它们是非常困难的。
+
+即使我们有了对耦合和内聚的度量，我们仍然面临如何使用这些度量来改进设计的挑战。
+“减少耦合”这样的建议其实并没有给开发人员提供具体的指导。它与“改进设计”一样，都是一个很模糊的建议，没有明确的执行步骤。
