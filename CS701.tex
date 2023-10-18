@@ -58,6 +58,9 @@
     part/number = {\Chinese{part}},
     chapter/name = {Chapter},
     chapter/number = { \arabic{chapter}},
+    chapter = {
+		format+=\heiti
+	},
     section = {
 		format+=\heiti
 	},
@@ -77,7 +80,7 @@
 \maketitle
 \tableofcontents
 
-\part{创建可维护的程序、可理解性}
+\part{创建可维护的程序、程序的可理解性}
 
 \include{chapters/CreatingMaintainableSoftware.tex}
 
@@ -96,6 +99,12 @@
 \part{程序的可变性}
 
 \include{chapters/DesignPatterns}
+
+\include{chapters/DI.tex}
+
+\include{chapters/SOLID.tex}
+
+\include{chapters/Quality.tex}
 
 \part{程序的可测试性}
 
