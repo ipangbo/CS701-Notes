@@ -1,0 +1,91 @@
+\chapter{Improving Testability}
+
+回顾之前的内容，为了测试某个东西，我们需要能够按照我们希望的方式操作它，以便我们可以观察不同输入的后果。换句话说，我们应该有能力控制输入和条件，从而观察其在各种情况下的表现，这是可控性 (Controllability)。为了测试某个东西，我们需要能够看到它实际上在做什么。这意味着我们应该能够观察并测量系统的输出或行为，以判断其是否按预期运行，这叫可观察性 (Observability)。
+
+为了提高一个系统或应用的测试性，需要增强其可控性和可观察性。这是因为：
+良好的可控性允许我们模拟各种情况，以验证系统在各种条件下的表现。
+良好的可观察性允许我们清晰地看到系统的反应和输出，从而确定它是否满足了预期的需求和标准。
+
+\subsubsection{测试用例的执行流程}
+
+\textbf{IUT的准备：}首先，我们需要为待测单元 (IUT - Implementation Under Test) 设置一个预测试状态。这意味着我们需要确保待测单元在测试之前处于正确且预期的状态，以便我们可以在这个状态下进行测试。
+
+\textbf{提供输入：}在IUT准备好后，我们需要提供特定的输入数据。这些输入是为了触发IUT的某些功能或行为。
+
+\textbf{执行IUT：}带有所给输入的IUT现在可以执行。这意味着我们正在实际运行软件或功能，以观察它如何响应所提供的输入。
+
+\textbf{比较实际与预期的行为：}最后，我们需要比较IUT的实际行为与预期行为。这涉及检查输出或系统行为，以确定软件是否按照预期运行。如果实际行为与预期行为一致，那么测试用例可能会被标记为通过；否则，它会被标记为失败。
+
+\section{使用DIP提升可测试性}
+
+为了提高测试性，我们需要增强观察性（observability）和控制性（controllability）。这两个属性是评估软件的测试性时的关键指标。观察性涉及到我们如何检查和理解软件的内部状态，而控制性涉及我们如何操纵这个状态。
+尽管需要观察和控制，但我们仍希望避免破坏封装性，因为封装是面向对象设计的核心原则。如果真的需要破坏封装，我们应该尽量减少其影响。
+
+
+状态越具体，控制就越困难。这意味着如果我们的软件状态非常具体或详细，那么操纵或更改这个状态就会更加困难。因此，如何使状态变得不那么具体或详细是一个挑战。
+
+DIP是面向对象设计的一种原则，它鼓励软件组件依赖于抽象而不是具体实现。这样，高级模块不会直接依赖于低级模块，而是依赖于它们共同的抽象。
+依赖注入是DIP的一种实现方式。通过依赖注入，我们可以控制一个对象的依赖是什么，这样就可以更容易地操纵和观察这个对象的状态。例如，可以注入模拟对象或存根以模拟外部系统或服务，从而提高测试性。
+
+在实际操作中，我们可以利用Mocking技术。具体来说，就是把一个不知道其下一个状态的对象（如Random）继承，重写其不确定的方法，使其确定，从而提升可控制性。
+
+\begin{lstlisting}[language=Java, caption=Mocking Example, label=lst:mocking_ex]
+// Not the real ChaoticRandomGen but a mockup of one
+public class MockChaoticRandomGen extends Random {
+    private double _result;
+    private int _count;
+
+    public MockChaoticRandomGen(double r) {
+        _result = r;
+    }
+
+    public double nextDouble() {
+        _count++;
+        return _result;
+    }
+
+    public void assertTimesCalled(int expected) {
+        assertEquals(expected, _count);
+    }
+}
+
+public class TestSimulation extends TestCase {
+    public void testChaotic() {
+        Simulation sim = new Simulation();
+        
+        // Specify the random distribution for test
+        Random distribution = new MockChaoticRandomGen();
+        
+        sim.setRandom(distribution);  // Injection site
+        sim.shopperArrives();
+        
+        // Now guaranteed that new shopper is chaotic
+        distribution.assertTimesCalled(1);  // observe
+        
+        // other parts of test
+    }
+}
+	
+\end{lstlisting}
+
+一旦我们开始创建 "模拟 "类，我们不妨通过添加更多支持测试过程的职责，使它们尽可能有用。
+增加更多支持测试过程的职责，包括提供观察所发生情况的方法。
+
+一些成熟的Mock变种供我们使用：
+
+\subsubsection{Stubs}
+Stubs 是最基础的模拟类型，它们提供完全简单的实现，并作为占位符存在，以便代码能够编译并创建实例。Stubs 在集成测试中经常被提及。在集成测试中，当开发者想要测试某个组件与其他组件的交互，但这些组件尚未实现或可用时，他们可能会使用 stub。但是使用 Stubs 的通常形式可能需要更改正在测试的代码，这可能会导致代码的紧耦合。
+
+\subsubsection{Fakes}
+Fakes 是非常简单的 mocks。它们提供功能更为完整的实现，但通常会避免使用真实的资源，如数据库或网络服务。Fakes 是非常简单的 mocks。它们提供功能更为完整的实现，但通常会避免使用真实的资源，如数据库或网络服务。
+
+\subsubsection{Mocks}
+Mocks 不仅提供受控的行为，还可以观察它们是如何被使用的。这意味着，除了模拟某个行为之外，Mocks 还可以验证他们是否按预期被调用。jmock, easymock, 和 mockito 是流行的 Java 模拟库，可以帮助开发者创建和管理 mock 对象。
+
+\subsubsection{GoogleMock}
+oogleMock是一个流行的模拟框架，它是 googletest 的一部分。googletest 是 Google 提供的一个开源的 C++ 测试框架。使用 GoogleMock，C++ 开发者可以轻松地为他们的代码创建 mock 对象。
+
+\section{总结}
+\textbf{设计选择会影响可测试性---特别是 DIP（依赖注入）的使用通常会提高可测试性（但也有其他原因）。}
+
+在软件开发中，模拟和模拟的变种（如 Stubs、Fakes 和 Mocks）为开发者提供了强大的工具，以在没有真实组件或服务的情况下测试代码。这些模拟方法可以提高测试的速度和灵活性，并帮助确保代码的质量和健壮性。
